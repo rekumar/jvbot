@@ -62,7 +62,7 @@ class Control:
             for line in zip(v, j, i, p):
                 writer.writerow(line)
 
-    def scan_cell(self, slot, vmin, vmax, steps=51, direction="both"):
+    def scan_cell(self, slot, vmin, vmax, steps=51, direction="forward"):
         direction_options = ["forward", "reverse", "both"]
         if direction not in direction_options:
             raise ValueError("direction must be one of {}".format(direction_options))
@@ -73,13 +73,13 @@ class Control:
             i, v = self.keithley.iv(vmin, vmax, steps)
 
         if direction == "reverse":
-            if vmin > vmax:
+            if vmin < vmax:
                 vmin, vmax = vmax, vmin
             i, v = self.keithley.iv(vmin, vmax, steps)
 
         if direction == "both":
-            self.scan_cell(slot, vmin, vmax, steps, "forward")
             self.scan_cell(slot, vmin, vmax, steps, "reverse")
+            self.scan_cell(slot, vmin, vmax, steps, "forward")
 
         self._save_to_csv(slot, i, v, direction)
 
